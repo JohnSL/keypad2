@@ -1,12 +1,46 @@
+/*!
+# Platform-agnostic driver for 3X4 numeric keypads
+
+Provides a driver for reading from standard 3X4 keypads
+
+## Example
+
+```rust
+let rows = (
+    gpiob.pb15.into_pull_up_input(&mut gpiob.crh),
+    gpioa.pa7.into_pull_up_input(&mut gpioa.crl),
+    gpiob.pb6.into_pull_up_input(&mut gpiob.crl),
+    gpioa.pa9.into_pull_up_input(&mut gpioa.crh),
+);
+
+let cols = (
+    gpioa.pa8.into_open_drain_output(&mut gpioa.crh),
+    gpiob.pb5.into_open_drain_output(&mut gpiob.crl),
+    gpioc.pc7.into_open_drain_output(&mut gpioc.crl),
+);
+
+let mut keypad = Keypad::new(rows, cols);
+
+let key = keypad.read_char(&mut delay);
+if key != ' ' {
+    ...
+}
+```
+*/
 #![no_std]
-
-pub type Rows<R0, R1, R2, R3> = (R0, R1, R2, R3);
-
-pub type Columns<C0, C1, C2> = (C0, C1, C2);
 
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use embedded_hal::blocking::delay::DelayMs;
 
+/// Defines a type that makes it easier to supply the four pins required for rows in the keypad.
+/// These pins need to support the `embedded_hal::digital::v2::InputPin` trait
+pub type Rows<R0, R1, R2, R3> = (R0, R1, R2, R3);
+
+/// Defines a type that makes it easier to supply the four pins required for rows in the keypad
+/// These pins need to support the `embedded_hal::digital::v2::OutputPin` trait
+pub type Columns<C0, C1, C2> = (C0, C1, C2);
+
+/// Manages the pins and the logic for scanning a keypad
 pub struct Keypad<
     R0: InputPin,
     R1: InputPin,
@@ -30,13 +64,20 @@ impl<
         C2: OutputPin,
     > Keypad<R0, R1, R2, R3, C0, C1, C2>
 {
+    /// Create a new instance of this structure
     pub fn new(rows: Rows<R0, R1, R2, R3>, columns: Columns<C0, C1, C2>) -> Self {
         Self { rows, columns }
     }
 
-    /// Reads a character from the keypad. This method returns even if no keys are pressed.
-    ///
-    /// Returns ' ' if no keys are pressed.
+    /**
+    Reads a character from the keypad. This method returns even if no keys are pressed.
+    It will return:
+    
+    * `'0'` through `'9'`
+    * `'*'`
+    * `'#'`
+    * `' '` if no keys are pressed.
+    */
     pub fn read_char(&mut self, delay: &mut dyn DelayMs<u16>) -> char {
         let raw = self.read(delay);
         if raw != 0 {
