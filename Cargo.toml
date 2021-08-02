@@ -1,0 +1,16 @@
+[package]
+name = "keypad2"
+version = "0.1.0"
+edition = "2018"
+license = "MIT"
+keywords = ["no-std", "lcd", "embedded-hal-driver", "embedded-hal", "keypad"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "A crate for reading a 3X4 keypad with embedded-hal"
+authors = ["John Socha-Leialoha"]
+#repository = "https://github.com/JohnSL/lcd_1602_i2c"
+#readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal = "^0.2.4"  # Access to generic embedded functions (`set_high`)
